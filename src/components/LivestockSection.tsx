@@ -85,48 +85,52 @@ export const LivestockSection = () => {
         </div>
       </div>
 
-      {Object.entries(data).map(([animal, stats]) => (
-        <div key={animal} className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground capitalize flex items-center gap-2">
-            {getIcon(animal)}
-            {animal}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Total Population"
-              value={stats.total.male + stats.total.female}
-              icon={getIcon(animal)}
-              trend={stats.total.trend as "up" | "down" | "stable"}
-              trendValue={stats.total.trendValue}
-              subtitle={`♂ ${stats.total.male} | ♀ ${stats.total.female}`}
-            />
-            <StatCard
-              title="Births This Week"
-              value={stats.births.male + stats.births.female}
-              icon={getIcon(animal)}
-              trend={stats.births.trend as "up" | "down" | "stable"}
-              trendValue={stats.births.trendValue}
-              subtitle={`♂ ${stats.births.male} | ♀ ${stats.births.female}`}
-            />
-            <StatCard
-              title="Deaths This Week"
-              value={stats.deaths.male + stats.deaths.female}
-              icon={getIcon(animal)}
-              trend={stats.deaths.trend as "up" | "down" | "stable"}
-              trendValue={stats.deaths.trendValue}
-              subtitle={`♂ ${stats.deaths.male} | ♀ ${stats.deaths.female}`}
-            />
-            <StatCard
-              title="Currently Mating"
-              value={stats.mating.male + stats.mating.female}
-              icon={getIcon(animal)}
-              trend={stats.mating.trend as "up" | "down" | "stable"}
-              trendValue={stats.mating.trendValue}
-              subtitle={`♂ ${stats.mating.male} | ♀ ${stats.mating.female}`}
-            />
-          </div>
-        </div>
-      ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {Object.entries(data).map(([animal, stats]) => (
+          <Card key={animal} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="border-b border-border">
+              <CardTitle className="text-xl capitalize flex items-center gap-2">
+                {getIcon(animal)}
+                {animal}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3">
+              <StatCard
+                title="Total Population"
+                value={stats.total.male + stats.total.female}
+                icon={getIcon(animal)}
+                trend={stats.total.trend as "up" | "down" | "stable"}
+                trendValue={stats.total.trendValue}
+                subtitle={`♂ ${stats.total.male} | ♀ ${stats.total.female}`}
+              />
+              <StatCard
+                title="Births This Week"
+                value={stats.births.male + stats.births.female}
+                icon={getIcon(animal)}
+                trend={stats.births.trend as "up" | "down" | "stable"}
+                trendValue={stats.births.trendValue}
+                subtitle={`♂ ${stats.births.male} | ♀ ${stats.births.female}`}
+              />
+              <StatCard
+                title="Deaths This Week"
+                value={stats.deaths.male + stats.deaths.female}
+                icon={getIcon(animal)}
+                trend={stats.deaths.trend as "up" | "down" | "stable"}
+                trendValue={stats.deaths.trendValue}
+                subtitle={`♂ ${stats.deaths.male} | ♀ ${stats.deaths.female}`}
+              />
+              <StatCard
+                title="Currently Mating"
+                value={stats.mating.male + stats.mating.female}
+                icon={getIcon(animal)}
+                trend={stats.mating.trend as "up" | "down" | "stable"}
+                trendValue={stats.mating.trendValue}
+                subtitle={`♂ ${stats.mating.male} | ♀ ${stats.mating.female}`}
+              />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <Card>
         <CardHeader>
