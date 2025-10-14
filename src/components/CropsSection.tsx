@@ -62,10 +62,10 @@ export const CropsSection = () => {
                     <td className="py-3 px-4 text-sm font-medium text-foreground">{crop.crop}</td>
                     <td className="py-3 px-4 text-sm text-foreground">{crop.landSize}</td>
                     <td className="py-3 px-4 text-sm text-foreground">
-                      {new Date(crop.plantedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(crop.plantedDate).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4 text-sm text-foreground">
-                      {new Date(crop.expectedHarvest).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(crop.expectedHarvest).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4 text-sm text-foreground">{crop.expectedYield}</td>
                   </tr>

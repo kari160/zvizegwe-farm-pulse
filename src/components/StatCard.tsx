@@ -27,14 +27,14 @@ export const StatCard = ({ title, value, icon, trend, trendValue, subtitle }: St
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">`
-      <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3 space-y-0">`
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
         <div className="text-primary">{icon}</div>
       </CardHeader>
-      <CardContent className="px-3 pb-3">`
+      <CardContent>
         <div className="flex items-baseline justify-between">
           <div className="text-3xl font-bold text-foreground">{value}</div>
           {trend && trendValue !== undefined && (
