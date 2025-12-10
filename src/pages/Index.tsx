@@ -13,7 +13,6 @@ const Index = () => {
       <main className="container mx-auto px-6 py-8 space-y-12">
         <LivestockSection />
           <MedicalHistorySection/>
-          <PhotoSection/>
         <CropsSection />
         <FinancialSection />
         <InventorySection />

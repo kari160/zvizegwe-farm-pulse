@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Stethoscope, Calendar, User, Filter, X } from "lucide-react";
+import { Stethoscope, Calendar, User } from "lucide-react";
 import { useStrapiResources } from "@/hooks/useStrapiResources";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -29,50 +29,37 @@ export const MedicalHistorySection = () => {
     if (isLoading) return <div className="flex justify-center items-center p-8">Loading medical history...</div>;
     if (error) return <div className="text-red-500 p-4">Error loading medical history: {error}</div>;
 
-    console.log("Medical History Data:", medicalData);
-
     // Sort by treatment date (newest first)
     const sortedData = [...medicalData].sort((a, b) =>
         new Date(b.Treatment_Date).getTime() - new Date(a.Treatment_Date).getTime()
     );
 
-    // Filter data based on selected status
+    // Apply filter from summary cards
     const filteredData = filterStatus
         ? sortedData.filter(record => record.Status_of_livestock === filterStatus)
         : sortedData;
 
-    const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    const getStatusVariant = (status: string) => {
         switch (status) {
-            case "Treated":
-                return "default";
-            case "Under Observation":
-                return "secondary";
-            case "Critical":
-                return "destructive";
-            case "Recovered":
-                return "outline";
-            default:
-                return "outline";
+            case "Treated": return "default";
+            case "Under Observation": return "secondary";
+            case "Critical": return "destructive";
+            case "Recovered": return "outline";
+            default: return "outline";
         }
     };
 
     const getStatusStyles = (status: string) => {
         switch (status) {
-            case "Treated":
-                return "bg-blue-50 text-blue-700 border-blue-200";
-            case "Under Observation":
-                return "bg-yellow-50 text-yellow-700 border-yellow-200";
-            case "Critical":
-                return "bg-red-50 text-red-700 border-red-200";
-            case "Recovered":
-                return "bg-green-50 text-green-700 border-green-200";
-            default:
-                return "bg-gray-50 text-gray-700 border-gray-200";
+            case "Treated": return "bg-blue-50 text-blue-700 border-blue-200";
+            case "Under Observation": return "bg-yellow-50 text-yellow-700 border-yellow-200";
+            case "Critical": return "bg-red-50 text-red-700 border-red-200";
+            case "Recovered": return "bg-green-50 text-green-700 border-green-200";
+            default: return "bg-gray-50 text-gray-700 border-gray-200";
         }
     };
 
     const getAnimalIcon = (animalType: string) => {
-        const animal = animalType.toLowerCase();
         const icons: Record<string, string> = {
             sheep: "🐑",
             goat: "🐐",
@@ -84,10 +71,9 @@ export const MedicalHistorySection = () => {
             poultry: "🐔",
             chicken: "🐔"
         };
-        return icons[animal] || "🐾";
+        return icons[animalType.toLowerCase()] || "🐾";
     };
 
-    // Count records by status
     const statusCounts = {
         Total: sortedData.length,
         Treated: sortedData.filter(r => r.Status_of_livestock === "Treated").length,
@@ -103,104 +89,39 @@ export const MedicalHistorySection = () => {
                 Medical History
             </h2>
 
-            {/* Status Filter */}
-            <Card>
-                <CardContent className="p-4">
-                    <div className="flex flex-wrap gap-2 items-center">
-                        <span className="text-sm font-medium flex items-center gap-2">
-                            <Filter className="h-4 w-4" />
-                            Filter by Status:
-                        </span>
-                        <Badge
-                            variant={!filterStatus ? "default" : "outline"}
-                            className="cursor-pointer"
-                            onClick={() => setFilterStatus(null)}
-                        >
-                            All Animals
-                        </Badge>
-                        {Object.entries(statusCounts).slice(1).map(([status, count]) => (
-                            <Badge
-                                key={status}
-                                variant={filterStatus === status ? "default" : "outline"}
-                                className={cn("cursor-pointer", getStatusStyles(status))}
-                                onClick={() => setFilterStatus(status)}
-                            >
-                                {status} ({count})
-                            </Badge>
-                        ))}
-                        {filterStatus && (
-                            <Badge
-                                variant="outline"
-                                className="cursor-pointer text-red-600 bg-red-50 border-red-200"
-                                onClick={() => setFilterStatus(null)}
-                            >
-                                <X className="h-3 w-3 mr-1" />
-                                Clear Filter
-                            </Badge>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Summary Statistics */}
+            {/* Summary Cards as single filter */}
             {sortedData.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <Card className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        !filterStatus && "ring-2 ring-primary"
-                    )} onClick={() => setFilterStatus(null)}>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-foreground">{statusCounts.Total}</div>
-                            <div className="text-sm text-muted-foreground">Total</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        filterStatus === "Treated" && "ring-2 ring-blue-500"
-                    )} onClick={() => setFilterStatus("Treated")}>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-blue-600">{statusCounts.Treated}</div>
-                            <div className="text-sm text-muted-foreground">Treated</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        filterStatus === "Under Observation" && "ring-2 ring-yellow-500"
-                    )} onClick={() => setFilterStatus("Under Observation")}>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-yellow-600">{statusCounts["Under Observation"]}</div>
-                            <div className="text-sm text-muted-foreground">Observation</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        filterStatus === "Critical" && "ring-2 ring-red-500"
-                    )} onClick={() => setFilterStatus("Critical")}>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-red-600">{statusCounts.Critical}</div>
-                            <div className="text-sm text-muted-foreground">Critical</div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        filterStatus === "Recovered" && "ring-2 ring-green-500"
-                    )} onClick={() => setFilterStatus("Recovered")}>
-                        <CardContent className="p-4 text-center">
-                            <div className="text-2xl font-bold text-green-600">{statusCounts.Recovered}</div>
-                            <div className="text-sm text-muted-foreground">Recovered</div>
-                        </CardContent>
-                    </Card>
+                    {Object.entries(statusCounts).map(([status, count]) => (
+                        <Card
+                            key={status}
+                            className={cn(
+                                "cursor-pointer transition-all hover:shadow-md",
+                                filterStatus === status || (!filterStatus && status === "Total") ? "ring-2 ring-primary" : ""
+                            )}
+                            onClick={() => setFilterStatus(status === "Total" ? null : status)}
+                        >
+                            <CardContent className="p-4 text-center">
+                                <div className={cn(
+                                    "text-2xl font-bold",
+                                    status === "Treated" ? "text-blue-600" :
+                                        status === "Under Observation" ? "text-yellow-600" :
+                                            status === "Critical" ? "text-red-600" :
+                                                status === "Recovered" ? "text-green-600" : "text-foreground"
+                                )}>
+                                    {count}
+                                </div>
+                                <div className="text-sm text-muted-foreground">{status}</div>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             )}
 
+            {/* Medical Records */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Stethoscope className="h-5 w-5" />
+                    <CardTitle>
                         {filterStatus ? `${filterStatus} Animals` : "All Animal Medical Records"}
                         {filterStatus && (
                             <Badge variant="secondary" className="ml-2">
@@ -281,8 +202,7 @@ export const MedicalHistorySection = () => {
 
                                                 <Badge
                                                     variant={getStatusVariant(record.Status_of_livestock)}
-                                                    className={cn("w-fit cursor-pointer", getStatusStyles(record.Status_of_livestock))}
-                                                    onClick={() => setFilterStatus(record.Status_of_livestock)}
+                                                    className={cn("w-fit", getStatusStyles(record.Status_of_livestock))}
                                                 >
                                                     {record.Status_of_livestock}
                                                 </Badge>
