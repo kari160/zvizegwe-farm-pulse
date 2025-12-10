@@ -1,166 +1,308 @@
+// components/LivestockSection.tsx
 import { useState } from "react";
+import { useStrapiResources } from "@/hooks/useStrapiResources";
 import { StatCard } from "./StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Rabbit, CircleDot } from "lucide-react";
+
+const SheepIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 2v20M2 12h20" />
+    </svg>
+);
+
+const GoatsIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 12l6 6 6-6" />
+    </svg>
+);
+
+const RabbitsIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2l4 10H8l4-10z" />
+        <circle cx="12" cy="16" r="4" />
+    </svg>
+);
 
 type AnimalType = "all" | "sheep" | "goats" | "rabbits";
+type Trend = "Up" | "Down" | "Stable";
 
-const livestockData = {
-  sheep: {
-    total: { male: 45, female: 67, trend: "up", trendValue: 8 },
-    births: { male: 3, female: 5, trend: "up", trendValue: 12 },
-    deaths: { male: 1, female: 0, trend: "down", trendValue: 50 },
-    mating: { male: 8, female: 12, trend: "stable", trendValue: 0 },
-  },
-  goats: {
-    total: { male: 32, female: 48, trend: "up", trendValue: 5 },
-    births: { male: 2, female: 4, trend: "up", trendValue: 20 },
-    deaths: { male: 0, female: 1, trend: "down", trendValue: 33 },
-    mating: { male: 6, female: 10, trend: "up", trendValue: 10 },
-  },
-  rabbits: {
-    total: { male: 58, female: 89, trend: "up", trendValue: 15 },
-    births: { male: 12, female: 15, trend: "up", trendValue: 25 },
-    deaths: { male: 2, female: 1, trend: "stable", trendValue: 0 },
-    mating: { male: 15, female: 20, trend: "up", trendValue: 18 },
-  },
-};
+interface LivestockStat {
+    id: number;
+    documentId: string;
+    animal: "sheep" | "goats";
+    trend?: string;
+    trendValue?: number;
+    maleAdults?: number | null;
+    femaleAdults?: number | null;
+    maleWeaners?: number | null;
+    femaleWeaners?: number | null;
+    maleKids?: number | null;
+    femaleKids?: number | null;
+    birthMale?: number | null;
+    birthFemale?: number | null;
+    totalBirths?: number | null;
+    purchaseMale?: number | null;
+    purchaseFemale?: number | null;
+    totalPurchases?: number | null;
+    deathMaleAdult?: number | null;
+    deathFemaleAdult?: number | null;
+    deathMaleWeaner?: number | null;
+    deathFemaleWeaner?: number | null;
+    deathMaleKids?: number | null;
+    deathFemaleKids?: number | null;
+    totalDeaths?: number | null;
+    Date: string | null;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
 
-const marketReadyData = [
-  { animal: "Sheep", count: 12, avgWeight: "45kg", avgAge: "8 months" },
-  { animal: "Goats", count: 8, avgWeight: "38kg", avgAge: "7 months" },
-  { animal: "Rabbits", count: 25, avgWeight: "2.5kg", avgAge: "4 months" },
-];
+interface RabbitStat {
+    id: number;
+    Tag_Id: string;
+    Weekly_Weights: string;
+    Total_Rabbits: number;
+    Male_Rabbits: number;
+    Female_Rabbits: number;
+    Kids: number;
+    Deaths?: number;
+    Births?: number;
+    Purchases?: number;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
+interface MarketReady {
+    id: number;
+    documentId: string;
+    animal: "sheep" | "goats" | "rabbits";
+    count: number;
+    avgWeight: string;
+    avgAge: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
+interface RabbitTotals {
+    id: number;
+    animal: "rabbits";
+    total: number;
+    males: number;
+    females: number;
+    kids: number;
+    deaths: number;
+    births: number;
+    purchases: number;
+}
 
 export const LivestockSection = () => {
-  const [selectedAnimal, setSelectedAnimal] = useState<AnimalType>("all");
+    const [selectedAnimal, setSelectedAnimal] = useState<AnimalType>("all");
 
-  const getAnimalData = () => {
-    if (selectedAnimal === "all") return livestockData;
-    return { [selectedAnimal]: livestockData[selectedAnimal] };
-  };
+    const { data: livestockData = [], isLoading: livestockLoading, error: livestockError } = useStrapiResources<LivestockStat>("livestock-statistics");
+    const { data: rabbitData = [], isLoading: rabbitLoading, error: rabbitError } = useStrapiResources<RabbitStat>("rabbits-statistics");
+    const { data: marketReadyData = [] } = useStrapiResources<MarketReady>("market-readies");
 
-  const getIcon = (animal: string) => {
-    if (animal === "sheep") return <CircleDot className="h-5 w-5" />;
-    if (animal === "goats") return <CircleDot className="h-5 w-5" />;
-    return <Rabbit className="h-5 w-5" />;
-  };
+    if ((livestockLoading && selectedAnimal !== "rabbits") || (rabbitLoading && (selectedAnimal === "rabbits" || selectedAnimal === "all"))) {
+        return <div className="flex justify-center items-center p-8">Loading livestock data...</div>;
+    }
 
-  const data = getAnimalData();
+    if ((livestockError && selectedAnimal !== "rabbits") || (rabbitError && (selectedAnimal === "rabbits" || selectedAnimal === "all"))) {
+        return <div className="text-red-500 p-4">Error loading livestock data</div>;
+    }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">Livestock Overview</h2>
-        <div className="flex gap-2">
-          <Badge
-            variant={selectedAnimal === "all" ? "default" : "outline"}
-            className="cursor-pointer"
-            onClick={() => setSelectedAnimal("all")}
-          >
-            All Animals
-          </Badge>
-          <Badge
-            variant={selectedAnimal === "sheep" ? "default" : "outline"}
-            className="cursor-pointer"
-            onClick={() => setSelectedAnimal("sheep")}
-          >
-            Sheep
-          </Badge>
-          <Badge
-            variant={selectedAnimal === "goats" ? "default" : "outline"}
-            className="cursor-pointer"
-            onClick={() => setSelectedAnimal("goats")}
-          >
-            Goats
-          </Badge>
-          <Badge
-            variant={selectedAnimal === "rabbits" ? "default" : "outline"}
-            className="cursor-pointer"
-            onClick={() => setSelectedAnimal("rabbits")}
-          >
-            Rabbits
-          </Badge>
+    const safeNumber = (value: number | null | undefined): number => value || 0;
+
+    // Process sheep/goats
+    const processedLivestock: LivestockStat[] = Object.values(
+        livestockData
+            .filter((stat) => stat.Date)
+            .reduce<Record<string, LivestockStat>>((acc, stat) => {
+                const date = new Date(stat.Date!);
+                const existing = acc[stat.animal];
+                if (!existing || date > new Date(existing.Date!)) acc[stat.animal] = stat;
+                return acc;
+            }, {})
+    );
+
+    // Aggregate rabbit totals including deaths, births, purchases
+    const rabbitTotals: RabbitTotals = rabbitData.reduce<RabbitTotals>(
+        (acc, stat) => {
+            acc.total += stat.Total_Rabbits;
+            acc.males += stat.Male_Rabbits;
+            acc.females += stat.Female_Rabbits;
+            acc.kids += stat.Kids;
+            acc.deaths += safeNumber(stat.Deaths);
+            acc.births += safeNumber(stat.Births);
+            acc.purchases += safeNumber(stat.Purchases);
+            return acc;
+        },
+        { id: 1, animal: "rabbits", total: 0, males: 0, females: 0, kids: 0, deaths: 0, births: 0, purchases: 0 }
+    );
+
+    // Combine for display based on selectedAnimal
+    const dataToDisplay: (LivestockStat | RabbitTotals)[] = (() => {
+        if (selectedAnimal === "all") return [...processedLivestock, rabbitTotals];
+        if (selectedAnimal === "rabbits") return [rabbitTotals];
+        return processedLivestock.filter((stat) => stat.animal === selectedAnimal);
+    })();
+
+    const getIcon = (animal: string) => {
+        if (animal === "sheep") return <SheepIcon />;
+        if (animal === "goats") return <GoatsIcon />;
+        return <RabbitsIcon />;
+    };
+
+    const mapTrend = (trend?: string): Trend => {
+        if (!trend) return "Stable";
+        const t = trend.toLowerCase();
+        if (t === "up") return "Up";
+        if (t === "down") return "Down";
+        return "Stable";
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-800">Livestock Overview</h2>
+                <div className="flex gap-2">
+                    {["all", "sheep", "goats", "rabbits"].map((animal) => (
+                        <Badge
+                            key={animal}
+                            variant={selectedAnimal === animal ? "default" : "outline"}
+                            className="cursor-pointer"
+                            onClick={() => setSelectedAnimal(animal as AnimalType)}
+                        >
+                            {animal === "all" ? "All Animals" : animal.charAt(0).toUpperCase() + animal.slice(1)}
+                        </Badge>
+                    ))}
+                </div>
+            </div>
+
+            {dataToDisplay.length === 0 ? (
+                <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+                    <p className="text-gray-500">No livestock data found.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {dataToDisplay.map((stat) => {
+                        if ("animal" in stat && stat.animal === "rabbits") {
+                            const rabbit = stat as RabbitTotals;
+                            return (
+                                <Card key={rabbit.id} className="hover:shadow-xl transition-shadow border border-gray-200 rounded-xl">
+                                    <CardHeader className="border-b border-gray-200">
+                                        <CardTitle className="text-xl capitalize flex items-center gap-2">
+                                            {getIcon(rabbit.animal)} {rabbit.animal}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 space-y-3">
+                                        <StatCard
+                                            title="Total Population"
+                                            value={rabbit.total}
+                                            icon={getIcon("rabbits")}
+                                            trend="Stable"
+                                            trendValue={0}
+                                            subtitle={`Males ♂ ${rabbit.males} | Females ♀ ${rabbit.females} | Kids 🐇 ${rabbit.kids}`}
+                                        />
+                                        <StatCard
+                                            title="Total Deaths"
+                                            value={rabbit.deaths}
+                                            icon={getIcon("rabbits")}
+                                            trend="Stable"
+                                            trendValue={0}
+                                            subtitle={`Deaths from all sources`}
+                                        />
+                                        <StatCard
+                                            title="Total Births"
+                                            value={rabbit.births}
+                                            icon={getIcon("rabbits")}
+                                            trend="Stable"
+                                            trendValue={0}
+                                            subtitle={`Births from all sources`}
+                                        />
+                                        <StatCard
+                                            title="Total Purchases"
+                                            value={rabbit.purchases}
+                                            icon={getIcon("rabbits")}
+                                            trend="Stable"
+                                            trendValue={0}
+                                            subtitle={`Purchases from all sources`}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            );
+                        }
+
+                        const livestock = stat as LivestockStat;
+                        const deaths =
+                            safeNumber(livestock.deathMaleAdult) +
+                            safeNumber(livestock.deathFemaleAdult) +
+                            safeNumber(livestock.deathMaleWeaner) +
+                            safeNumber(livestock.deathFemaleWeaner) +
+                            safeNumber(livestock.deathMaleKids) +
+                            safeNumber(livestock.deathFemaleKids);
+
+                        const births = safeNumber(livestock.totalBirths) || (safeNumber(livestock.birthMale) + safeNumber(livestock.birthFemale));
+                        const purchases = safeNumber(livestock.totalPurchases) || (safeNumber(livestock.purchaseMale) + safeNumber(livestock.purchaseFemale));
+
+                        const totalPopulation =
+                            safeNumber(livestock.maleAdults) +
+                            safeNumber(livestock.femaleAdults) +
+                            safeNumber(livestock.maleWeaners) +
+                            safeNumber(livestock.femaleWeaners) +
+                            safeNumber(livestock.maleKids) +
+                            safeNumber(livestock.femaleKids);
+
+                        return (
+                            <Card key={livestock.id} className="hover:shadow-xl transition-shadow border border-gray-200 rounded-xl">
+                                <CardHeader className="border-b border-gray-200">
+                                    <CardTitle className="text-xl capitalize flex items-center gap-2">
+                                        {getIcon(livestock.animal)}
+                                        {livestock.animal}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-4 space-y-3">
+                                    <StatCard
+                                        title="Total Population"
+                                        value={totalPopulation}
+                                        icon={getIcon(livestock.animal)}
+                                        trend={mapTrend(livestock.trend)}
+                                        trendValue={livestock.trendValue ?? 0}
+                                        subtitle={`Males ♂ ${safeNumber(livestock.maleAdults) + safeNumber(livestock.maleWeaners) + safeNumber(livestock.maleKids)} | Females ♀ ${safeNumber(livestock.femaleAdults) + safeNumber(livestock.femaleWeaners) + safeNumber(livestock.femaleKids)}`}
+                                    />
+                                    <StatCard
+                                        title="Total Deaths"
+                                        value={deaths}
+                                        icon={getIcon(livestock.animal)}
+                                        trend={mapTrend(livestock.trend)}
+                                        trendValue={livestock.trendValue ?? 0}
+                                        subtitle={`Males ♂ ${safeNumber(livestock.deathMaleAdult) + safeNumber(livestock.deathMaleWeaner) + safeNumber(livestock.deathMaleKids)} | Females ♀ ${safeNumber(livestock.deathFemaleAdult) + safeNumber(livestock.deathFemaleWeaner) + safeNumber(livestock.deathFemaleKids)}`}
+                                    />
+                                    <StatCard
+                                        title="Total Births"
+                                        value={births}
+                                        icon={getIcon(livestock.animal)}
+                                        trend={mapTrend(livestock.trend)}
+                                        trendValue={livestock.trendValue ?? 0}
+                                        subtitle={`Males ♂ ${safeNumber(livestock.birthMale)} | Females ♀ ${safeNumber(livestock.birthFemale)}`}
+                                    />
+                                    <StatCard
+                                        title="Total Purchases"
+                                        value={purchases}
+                                        icon={getIcon(livestock.animal)}
+                                        trend={mapTrend(livestock.trend)}
+                                        trendValue={livestock.trendValue ?? 0}
+                                        subtitle={`Males ♂ ${safeNumber(livestock.purchaseMale)} | Females ♀ ${safeNumber(livestock.purchaseFemale)}`}
+                                    />
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
+            )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {Object.entries(data).map(([animal, stats]) => (
-          <Card key={animal} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-xl capitalize flex items-center gap-2">
-                {getIcon(animal)}
-                {animal}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-3">
-              <StatCard
-                title="Total Population"
-                value={stats.total.male + stats.total.female}
-                icon={getIcon(animal)}
-                trend={stats.total.trend as "up" | "down" | "stable"}
-                trendValue={stats.total.trendValue}
-                subtitle={`♂ ${stats.total.male} | ♀ ${stats.total.female}`}
-              />
-              <StatCard
-                title="Births This Week"
-                value={stats.births.male + stats.births.female}
-                icon={getIcon(animal)}
-                trend={stats.births.trend as "up" | "down" | "stable"}
-                trendValue={stats.births.trendValue}
-                subtitle={`♂ ${stats.births.male} | ♀ ${stats.births.female}`}
-              />
-              <StatCard
-                title="Deaths This Week"
-                value={stats.deaths.male + stats.deaths.female}
-                icon={getIcon(animal)}
-                trend={stats.deaths.trend as "up" | "down" | "stable"}
-                trendValue={stats.deaths.trendValue}
-                subtitle={`♂ ${stats.deaths.male} | ♀ ${stats.deaths.female}`}
-              />
-              <StatCard
-                title="Currently Mating"
-                value={stats.mating.male + stats.mating.female}
-                icon={getIcon(animal)}
-                trend={stats.mating.trend as "up" | "down" | "stable"}
-                trendValue={stats.mating.trendValue}
-                subtitle={`♂ ${stats.mating.male} | ♀ ${stats.mating.female}`}
-              />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Market Ready Animals</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Animal</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Count</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Avg Weight</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Avg Age</th>
-                </tr>
-              </thead>
-              <tbody>
-                {marketReadyData.map((item) => (
-                  <tr key={item.animal} className="border-b border-border last:border-0">
-                    <td className="py-3 px-4 text-sm font-medium text-foreground">{item.animal}</td>
-                    <td className="py-3 px-4 text-sm text-foreground">{item.count}</td>
-                    <td className="py-3 px-4 text-sm text-foreground">{item.avgWeight}</td>
-                    <td className="py-3 px-4 text-sm text-foreground">{item.avgAge}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
 };

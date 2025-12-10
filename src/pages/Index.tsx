@@ -3,6 +3,8 @@ import { LivestockSection } from "@/components/LivestockSection";
 import { CropsSection } from "@/components/CropsSection";
 import { FinancialSection } from "@/components/FinancialSection";
 import { InventorySection } from "@/components/InventorySection";
+import {MedicalHistorySection} from "@/components/MedicalHistorySection";
+import {PhotoSection} from "@/components/PhotoSection";
 
 const Index = () => {
   return (
@@ -10,6 +12,8 @@ const Index = () => {
       <Header />
       <main className="container mx-auto px-6 py-8 space-y-12">
         <LivestockSection />
+          <MedicalHistorySection/>
+          <PhotoSection/>
         <CropsSection />
         <FinancialSection />
         <InventorySection />
